@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DE Offsite | MAL Playback</title>
+  <style>
+    :root{
+      --bg: #061A22;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
+      --line: rgba(255,255,255,0.14);
+
+      --infiniteBlue: #032D42;
+      --snGreen: #81B5A1;
+      --wasabi: #63DF4E;
+
+      --accent: var(--wasabi);
+      --accent2: var(--snGreen);
+
+      --shadow: 0 18px 60px rgba(0,0,0,0.45);
+      --radius: 18px;
+
+      --h1: clamp(36px, 4.5vw, 58px);
+      --h2: clamp(26px, 3vw, 36px);
+      --h3: clamp(16px, 1.8vw, 20px);
+      --p:  clamp(14px, 1.4vw, 18px);
+    }
+
+    html, body{
+      margin:0; height:100%;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(99,223,78,0.16), transparent 55%),
+                  radial-gradient(1100px 760px at 85% 30%, rgba(129,181,161,0.16), transparent 60%),
+                  radial-gradient(1200px 900px at 50% 120%, rgba(3,45,66,0.55), rgba(0,0,0,0.85)),
+                  var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow:hidden;
+    }
+
+    .deck{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 28px;
+      box-sizing:border-box;
+    }
+
+    .slide{
+      width: 96vw;
+      height: 92vh;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      position: relative;
+      padding: 44px 52px 18px;
+      box-sizing:border-box;
+      display:none;
+      flex-direction: column;
+      overflow:hidden;
+    }
+    .slide.active{ display:flex; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom: 18px;
+      flex: 0 0 auto;
+    }
+
+    .slideBody{
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 10px;
+      box-sizing: border-box;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .dot{
+      width:10px; height:10px; border-radius:99px;
+      background: var(--accent);
+      box-shadow: 0 0 18px rgba(99,223,78,0.55);
+    }
+
+    .timer{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      user-select:none;
+    }
+    .timer strong{ color: rgba(255,255,255,0.95); }
+    .timer.warn{ border-color: rgba(99,223,78,0.4); }
+    .timer.over{ border-color: rgba(255,112,112,0.4); }
+    #timerText.warn{ color: var(--wasabi); }
+    #timerText.over{ color: #ff7070; }
+    .timerText.warn{ color: var(--wasabi); }
+    .timerText.over{ color: #ff7070; }
+
+    h1{
+      font-size: var(--h1);
+      line-height: 1.05;
+      margin: 8px 0 8px;
+      letter-spacing:-0.6px;
+    }
+
+    .subtitle{
+      font-size: var(--p);
+      color: var(--muted);
+      max-width: 980px;
+      line-height:1.5;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .threeCol{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      overflow:hidden;
+    }
+
+    .card h3{
+      margin: 0 0 8px;
+      font-size: var(--h3);
+      color: rgba(255,255,255,0.88);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(99,223,78,0.12);
+      border: 1px solid rgba(99,223,78,0.25);
+      color: rgba(255,255,255,0.86);
+      font-size: 12px;
+      letter-spacing:0.2px;
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    ul{
+      margin: 8px 0 0 20px;
+      padding:0;
+    }
+    li{
+      margin: 8px 0;
+      font-size: var(--p);
+      color: rgba(255,255,255,0.88);
+      line-height: 1.35;
+    }
+    li small{
+      display:block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+    }
+
+    .footer{
+      flex: 0 0 auto;
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      user-select:none;
+    }
+
+    .progressWrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 200px;
+      justify-content:flex-end;
+    }
+
+    .progress{
+      width: 160px;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.12);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .bar{
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 18px rgba(99,223,78,0.35);
+      transition: width 0.3s ease;
+    }
+
+    /* ---- Global controls bar (outside slides) ---- */
+    .controls{
+      position:fixed;
+      right: 24px;
+      top: 20px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      z-index: 100;
+    }
+
+    .ctrl{
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(6,26,34,0.80);
+      color: rgba(255,255,255,0.80);
+      font-size: 13px;
+      font-family: inherit;
+      line-height:1;
+      white-space:nowrap;
+      transition: background 0.15s, border-color 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    .ctrl:hover{
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.30);
+      color: rgba(255,255,255,1);
+    }
+    .ctrl:active{ transform: translateY(1px); }
+    .ctrl:disabled{
+      opacity: 0.3;
+      cursor: default;
+      pointer-events: none;
+    }
+    .ctrl.active{
+      background: rgba(99,223,78,0.12);
+      border-color: rgba(99,223,78,0.35);
+      color: var(--wasabi);
+    }
+    .ctrl-sep{
+      width:1px; height:22px;
+      background: rgba(255,255,255,0.14);
+      flex-shrink:0;
+    }
+
+    .notes{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      border: 1px dashed rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .showNotes .notes{ display:block; }
+
+    /* ---- Capture / edit UI ---- */
+    .capturePanel{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      background: rgba(0,0,0,0.14);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .field label{
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: rgba(255,255,255,0.60);
+      text-transform: uppercase;
+      user-select:none;
+    }
+    .field input, .field textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: rgba(255,255,255,0.92);
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing:border-box;
+    }
+    .field input:focus, .field textarea:focus{
+      border-color: rgba(99,223,78,0.35);
+      background: rgba(255,255,255,0.08);
+    }
+    .field textarea{
+      min-height: 60px;
+      max-height: 140px;
+      overflow: auto;
+      resize: vertical;
+    }
+
+    .actionsRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .btn{
+      cursor:pointer;
+      user-select:none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.18);
+      color: rgba(255,255,255,0.90);
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .btn.primary{
+      border-color: rgba(99,223,78,0.40);
+      background: rgba(99,223,78,0.14);
+      color: rgba(255,255,255,0.95);
+    }
+    .btn.danger{
+      border-color: rgba(255,112,112,0.35);
+      background: rgba(255,112,112,0.10);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .mini{
+      font-size: 12px;
+      color: rgba(255,255,255,0.50);
+      margin-right:auto;
+    }
+
+    .sectionDivider{
+      margin: 12px 0 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .sectionLabel{
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.40);
+      margin: 10px 0 6px;
+    }
+
+    /* ---- Mode visibility ---- */
+    /* editOnly: shown when NOT locked */
+    body.locked .editOnly{ display:none !important; }
+
+    /* lockedOnly: shown when locked */
+    .lockedOnly{ display:none; }
+    body.locked .lockedOnly{ display:block; }
+
+    /* modePill in badge */
+    .modePill{
+      display:inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,112,112,0.30);
+      background: rgba(255,112,112,0.10);
+      color: rgba(255,180,180,0.85);
+      font-size: 11px;
+      user-select:none;
+    }
+    body.locked .modePill{ display:none; }
+
+    /* Close slide big text */
+    .closeSlide{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      height:100%;
+      gap: 28px;
+    }
+    .closeSlide h1{
+      font-size: clamp(52px, 7vw, 90px);
+      margin:0;
+      background: linear-gradient(135deg, #fff 0%, var(--snGreen) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .closeSlide .closeBullets{
+      list-style:none;
+      margin:0; padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .closeSlide .closeBullets li{
+      font-size: clamp(18px, 2.2vw, 26px);
+      color: rgba(255,255,255,0.85);
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .closeSlide .closeBullets li::before{
+      content:"";
+      display:inline-block;
+      width:8px; height:8px;
+      border-radius:99px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(99,223,78,0.5);
+      flex-shrink:0;
+    }
+    .closeSlide .closeFootnote{
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      width: min(600px, 80vw);
+    }
+
+    @media print{
+      body{ overflow: visible; }
+      .deck{ display:block; padding:0; }
+      .controls{ display:none; }
+      .slide{
+        display:block;
+        page-break-after: always;
+        margin:0;
+        border-radius:0;
+        height:auto;
+        width:auto;
+        overflow: visible;
+      }
+      .slideBody{ overflow: visible; padding-right: 0; }
+      .footer{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Global navigation controls (outside all slides) -->
+  <div class="controls">
+    <button class="ctrl" id="ctrlPrev">◀ Prev</button>
+    <button class="ctrl" id="ctrlNext">Next ▶</button>
+    <div class="ctrl-sep"></div>
+    <button class="ctrl" id="ctrlPause">⏸ Pause</button>
+    <button class="ctrl" id="ctrlReset">↺ Reset</button>
+    <div class="ctrl-sep"></div>
+    <button class="ctrl" id="ctrlNotes">Notes</button>
+    <button class="ctrl" id="ctrlLock">🔒 Lock</button>
+  </div>
+
+  <div class="deck" id="deck">
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 1 — Prep workspace (unlocked) / Internal summary (locked)
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide active" data-duration="45" data-title="Prep workspace" data-speaker="Dan">
+      <div class="topbar">
+        <!-- Badge changes label depending on mode -->
+        <div class="badge editOnly">
+          <span class="dot"></span>
+          DE Offsite • Prep workspace
+          <span class="modePill">Internal only</span>
+        </div>
+        <div class="badge lockedOnly">
+          <span class="dot"></span>
+          DE Offsite • Internal prep summary
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer" id="timerBadge">⏱ <strong id="timerText">45:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">Dan</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+
+        <!-- ── UNLOCKED: Edit / capture UI ── -->
+        <div class="editOnly">
+          <h1 style="font-size:clamp(28px,3.5vw,44px); margin-bottom:4px;">Prep workspace</h1>
+          <div class="subtitle">Capture MAL themes first; then fill pillars, behaviours, owners, cadence. Lock the deck when ready to present.</div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3><span class="pill">Step 1</span> MAL themes — what we heard this morning</h3>
+            <div class="capturePanel">
+              <div class="field">
+                <label>MAL theme 1 (what we heard)</label>
+                <input id="in_theme1" placeholder="e.g., Join deals earlier; shape before scope is set" />
+              </div>
+              <div class="field">
+                <label>Example / why it matters</label>
+                <input id="in_theme1detail" placeholder="1 line" />
+              </div>
+
+              <div class="field">
+                <label>MAL theme 2 (what we heard)</label>
+                <input id="in_theme2" placeholder="e.g., Stronger technical authority in the room" />
+              </div>
+              <div class="field">
+                <label>Example / why it matters</label>
+                <input id="in_theme2detail" placeholder="1 line" />
+              </div>
+
+              <div class="field">
+                <label>MAL theme 3 (what we heard)</label>
+                <input id="in_theme3" placeholder="e.g., More commercial challenge from DE" />
+              </div>
+              <div class="field">
+                <label>Example / why it matters</label>
+                <input id="in_theme3detail" placeholder="1 line" />
+              </div>
+
+              <div class="field">
+                <label>MAL theme 4 — optional</label>
+                <input id="in_theme4" placeholder="optional" />
+              </div>
+              <div class="field">
+                <label>Example / why it matters</label>
+                <input id="in_theme4detail" placeholder="1 line" />
+              </div>
+            </div>
+
+            <hr class="sectionDivider" />
+            <div class="sectionLabel">Step 2 — Agreed narrative (updates Slides 3–5)</div>
+
+            <div class="field">
+              <label>Agreed pillars — one per line, format: Pillar name - one-line meaning (updates Slide 3)</label>
+              <textarea id="in_pillars" placeholder="Pillar name - one-line definition&#10;Pillar name - one-line definition&#10;Pillar name - one-line definition"></textarea>
+            </div>
+
+            <div class="twoCol" style="margin-top:10px;">
+              <div class="field">
+                <label>Start behaviours — one per line (updates Slide 4)</label>
+                <textarea id="in_start" placeholder="Start doing..."></textarea>
+              </div>
+              <div class="field">
+                <label>Stop behaviours — one per line (updates Slide 4)</label>
+                <textarea id="in_stop" placeholder="Stop doing..."></textarea>
+              </div>
+            </div>
+
+            <div class="twoCol" style="margin-top:10px;">
+              <div class="field">
+                <label>Owners / next steps — one per line (updates Slide 5)</label>
+                <textarea id="in_owners" placeholder="Workstream - Owner - first action"></textarea>
+              </div>
+              <div class="field">
+                <label>Cadence / tracking — one per line (updates Slide 5)</label>
+                <textarea id="in_cadence" placeholder="Monthly ELT check-in - what we review"></textarea>
+              </div>
+            </div>
+
+            <div class="actionsRow">
+              <div class="mini">Auto-saves locally in browser</div>
+              <button class="btn" id="btnExport">Export JSON</button>
+              <button class="btn" id="btnImport">Import JSON</button>
+              <button class="btn danger" id="btnClear">Clear all</button>
+              <button class="btn primary" id="btnLock">Lock deck ▶</button>
+            </div>
+            <input type="file" id="fileImport" accept="application/json" style="display:none" />
+          </div>
+        </div>
+
+        <!-- ── LOCKED: Internal prep summary ── -->
+        <div class="lockedOnly">
+          <h1 style="font-size:clamp(28px,3.5vw,44px); margin-bottom:4px;">Internal prep summary</h1>
+          <div class="subtitle">Internal alignment only — not shown to MALs. Slides 2–6 are the presentation deck.</div>
+
+          <div class="twoCol">
+            <div class="card">
+              <h3><span class="pill">MAL themes</span> What we heard</h3>
+              <ul id="summaryThemesList"></ul>
+            </div>
+            <div class="card">
+              <h3><span class="pill">Pillars</span> Agreed narrative</h3>
+              <ul id="summaryPillarsList"></ul>
+            </div>
+          </div>
+
+          <div class="threeCol" style="margin-top:12px;">
+            <div class="card">
+              <h3><span class="pill">Start</span></h3>
+              <ul id="summaryStartList"></ul>
+            </div>
+            <div class="card">
+              <h3><span class="pill">Stop</span></h3>
+              <ul id="summaryStopList"></ul>
+            </div>
+            <div class="card">
+              <h3><span class="pill">Owners</span> + <span class="pill" style="background:rgba(129,181,161,0.12); border-color:rgba(129,181,161,0.25);">Cadence</span></h3>
+              <ul id="summaryOwnersList"></ul>
+              <ul id="summaryCadenceList" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line);"></ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer">
+        <div>10 March 2026 • Singapore • Internal only — not shown to MALs</div>
+        <div class="progressWrap">
+          <span id="count">1 / 6</span>
+          <div class="progress"><div class="bar" id="bar"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 2 — What we heard from MALs (Dan)
+         First slide shown to MALs
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide" data-duration="6" data-title="What we heard" data-speaker="Dan">
+      <div class="topbar">
+        <div class="badge"><span class="dot"></span> DE Offsite • MAL Playback</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">Dan</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+        <h1>What we heard from MALs</h1>
+        <div class="subtitle">This morning you shared what you need from Delivery Excellence. Here's what we heard — and how we're responding.</div>
+
+        <div class="twoCol">
+          <div class="card">
+            <h3><span class="pill">Themes</span> Patterns from the conversation</h3>
+            <ul class="bigList">
+              <li><strong data-bind="theme1">[Theme 1]</strong><small data-bind="theme1detail">[Meaning / example]</small></li>
+              <li><strong data-bind="theme2">[Theme 2]</strong><small data-bind="theme2detail">[Meaning / example]</small></li>
+              <li><strong data-bind="theme3">[Theme 3]</strong><small data-bind="theme3detail">[Meaning / example]</small></li>
+              <li><strong data-bind="theme4">[Theme 4 optional]</strong><small data-bind="theme4detail">[Meaning / example]</small></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3><span class="pill">Our commitment</span></h3>
+            <ul class="bigList">
+              <li>We took this seriously.<small>The leadership team has spent the day working through your expectations.</small></li>
+              <li>We agreed on what DE stands for.<small>A clear narrative — not just words on a slide.</small></li>
+              <li>We're assigning owners.<small>Concrete actions with accountability.</small></li>
+            </ul>
+            <div class="notes">
+              <strong>Dan opening:</strong><br>
+              "This morning you shared expectations. We spent the day reflecting on that as a leadership group. Here's what we heard and how we're responding."<br><br>
+              <em>If challenged:</em> "That's helpful context — we'll incorporate it as we finalise actions and owners."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>10 March 2026 • Singapore</div>
+        <div class="progressWrap">
+          <span class="slideCount">2 / 6</span>
+          <div class="progress"><div class="bar slideBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 3 — What DE stands for (Gregg)
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide" data-duration="6" data-title="What DE stands for" data-speaker="Gregg">
+      <div class="topbar">
+        <div class="badge"><span class="dot"></span> DE Offsite • Narrative</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">Gregg</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+        <h1>What DE stands for</h1>
+        <div class="subtitle">3–5 pillars. Memorable, non-jargony, with a one-line meaning each.</div>
+
+        <div class="twoCol">
+          <div class="card">
+            <h3><span class="pill">Pillars</span> Agreed today</h3>
+            <ul id="pillarsList" class="bigList"></ul>
+          </div>
+          <div class="card">
+            <h3><span class="pill">So what</span> What this means</h3>
+            <ul class="bigList">
+              <li>One DE story across APAC.<small>Same narrative across regions and practices.</small></li>
+              <li>Behaviour over slogans.<small>Observable shifts stakeholders can point to.</small></li>
+              <li>Outcomes are the anchor.<small>Not just deliverables — business results.</small></li>
+            </ul>
+            <div class="notes">
+              <strong>Gregg guidance:</strong><br>
+              Keep it crisp. For each pillar: one sentence meaning + one "what it looks like".<br><br>
+              <em>Close line:</em> "This is the identity we'll reinforce consistently — we'll make it real through the shifts and actions on the next slides."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>Keep to 3–5; stop at "memorable"</div>
+        <div class="progressWrap">
+          <span class="slideCount">3 / 6</span>
+          <div class="progress"><div class="bar slideBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 4 — Behaviour shifts (Ethan)
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide" data-duration="7" data-title="Behaviour shifts" data-speaker="Ethan">
+      <div class="topbar">
+        <div class="badge"><span class="dot"></span> DE Offsite • Commitments</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer">⏱ <strong class="timerText">07:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">Ethan</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+        <h1>Behaviour shifts</h1>
+        <div class="subtitle">Concrete, observable changes. What you will see DE do differently.</div>
+
+        <div class="twoCol">
+          <div class="card">
+            <h3><span class="pill">Start</span> What we will do</h3>
+            <ul id="startList" class="bigList"></ul>
+            <div class="notes">
+              <strong>Ethan guidance:</strong><br>
+              Choose 1–2 items and explain the operating-model impact; then stop.<br>
+              Don't list everything — the slide already does that.
+            </div>
+          </div>
+          <div class="card">
+            <h3><span class="pill">Stop</span> What we will stop doing</h3>
+            <ul id="stopList" class="bigList"></ul>
+            <div class="notes">
+              <strong>Ethan note:</strong><br>
+              Being direct about what we'll stop is a credibility signal to MALs.<br>
+              Keep it short; let the list speak.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>Make it specific; avoid motherhood statements</div>
+        <div class="progressWrap">
+          <span class="slideCount">4 / 6</span>
+          <div class="progress"><div class="bar slideBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 5 — How we'll follow through (Dan)
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide" data-duration="6" data-title="How we'll follow through" data-speaker="Dan">
+      <div class="topbar">
+        <div class="badge"><span class="dot"></span> DE Offsite • Follow-through</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">Dan</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+        <h1>How we'll follow through</h1>
+        <div class="subtitle">Clear owners. Clear cadence. Progress visible.</div>
+
+        <div class="grid">
+          <div class="card">
+            <h3><span class="pill">Owners</span> Accountable leads</h3>
+            <ul id="ownersList" class="bigList"></ul>
+          </div>
+          <div class="card">
+            <h3><span class="pill">Cadence</span> How we track progress</h3>
+            <ul id="cadenceList" class="bigList"></ul>
+            <div class="notes">
+              <strong>Dan close:</strong><br>
+              "Clear ownership. Clear cadence. You'll see progress — not just a slide deck."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>End with confidence; keep it short</div>
+        <div class="progressWrap">
+          <span class="slideCount">5 / 6</span>
+          <div class="progress"><div class="bar slideBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         SLIDE 6 — Close (CY)
+         ═══════════════════════════════════════════════════════ -->
+    <section class="slide" data-duration="2" data-title="Close" data-speaker="CY">
+      <div class="topbar">
+        <div class="badge"><span class="dot"></span> DE Offsite • Close</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="timer">⏱ <strong class="timerText">02:00</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9); margin-left:6px;">CY</strong></div>
+        </div>
+      </div>
+
+      <div class="slideBody">
+        <div class="closeSlide">
+          <h1>Thank you</h1>
+          <ul class="closeBullets">
+            <li>We heard you</li>
+            <li>We aligned on what DE stands for</li>
+            <li>We've assigned owners and will follow through</li>
+          </ul>
+          <div class="closeFootnote">
+            Next update: progress review in the agreed cadence
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>10 March 2026 • Singapore</div>
+        <div class="progressWrap">
+          <span class="slideCount">6 / 6</span>
+          <div class="progress"><div class="bar slideBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /deck -->
+
+  <script>
+    (function(){
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const TOTAL = slides.length; // 6
+      let idx = 0;
+
+      // ── Data model ──────────────────────────────────────────
+      const STORAGE_KEY = "de_mal_live_deck_v3";
+      const LOCK_KEY    = "de_mal_live_deck_locked_v3";
+
+      let model = {
+        theme1:"", theme1detail:"",
+        theme2:"", theme2detail:"",
+        theme3:"", theme3detail:"",
+        theme4:"", theme4detail:"",
+        pillars: "",
+        start: "",
+        stop: "",
+        owners: "",
+        cadence: ""
+      };
+
+      const load = () => {
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) model = { ...model, ...JSON.parse(raw) };
+        }catch(e){}
+      };
+
+      const save = () => {
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(model)); }catch(e){}
+      };
+
+      const isLocked = () => localStorage.getItem(LOCK_KEY) === "1";
+      const setLocked = (locked) => {
+        localStorage.setItem(LOCK_KEY, locked ? "1" : "0");
+        document.body.classList.toggle("locked", locked);
+        applyModelToDeck(); // refresh summary when toggling lock
+      };
+
+      // ── Render helpers ───────────────────────────────────────
+      const escapeHtml = (s) =>
+        String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+      const parseLines = (txt) =>
+        (txt || "").split("\n").map(s => s.trim()).filter(Boolean);
+
+      const setText = (key, value, fallback) => {
+        document.querySelectorAll(`[data-bind="${key}"]`).forEach(el => {
+          el.textContent = (value && value.trim()) ? value : (fallback || el.textContent);
+        });
+      };
+
+      const renderSimpleList = (id, text, placeholder, maxItems) => {
+        const ul = document.getElementById(id);
+        if (!ul) return;
+        ul.innerHTML = "";
+        const lines = parseLines(text);
+        if (lines.length === 0){
+          const li = document.createElement("li");
+          li.style.color = "rgba(255,255,255,0.35)";
+          li.textContent = placeholder;
+          ul.appendChild(li);
+          return;
+        }
+        lines.slice(0, maxItems || 6).forEach(line => {
+          const li = document.createElement("li");
+          li.textContent = line;
+          ul.appendChild(li);
+        });
+      };
+
+      const renderPillarsList = (id, max) => {
+        const ul = document.getElementById(id);
+        if (!ul) return;
+        ul.innerHTML = "";
+        const lines = parseLines(model.pillars);
+        const source = lines.length ? lines : ["[Pillar 1] - [meaning]","[Pillar 2] - [meaning]","[Pillar 3] - [meaning]"];
+        source.slice(0, max || 5).forEach(line => {
+          const parts = line.split(" - ");
+          const name = (parts[0] || line).trim();
+          const def  = parts.slice(1).join(" - ").trim();
+          const li = document.createElement("li");
+          const isEmpty = !lines.length;
+          li.innerHTML = `<strong style="${isEmpty ? 'color:rgba(255,255,255,0.35)' : ''}">${escapeHtml(name)}</strong>${def ? `<small style="${isEmpty ? 'color:rgba(255,255,255,0.25)' : ''}">${escapeHtml(def)}</small>` : ""}`;
+          ul.appendChild(li);
+        });
+      };
+
+      // Summary themes for locked Slide 1
+      const renderSummaryThemes = () => {
+        const ul = document.getElementById("summaryThemesList");
+        if (!ul) return;
+        ul.innerHTML = "";
+        let any = false;
+        [1,2,3,4].forEach(n => {
+          const t = model[`theme${n}`];
+          const d = model[`theme${n}detail`];
+          if (!t || !t.trim()) return;
+          any = true;
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${escapeHtml(t)}</strong>${d ? `<small>${escapeHtml(d)}</small>` : ""}`;
+          ul.appendChild(li);
+        });
+        if (!any){
+          const li = document.createElement("li");
+          li.style.color = "rgba(255,255,255,0.35)";
+          li.textContent = "[No themes captured yet]";
+          ul.appendChild(li);
+        }
+      };
+
+      const applyModelToDeck = () => {
+        // Slide 2: MAL themes (data-bind)
+        setText("theme1", model.theme1, "[Theme 1]");
+        setText("theme1detail", model.theme1detail, "[Meaning / example]");
+        setText("theme2", model.theme2, "[Theme 2]");
+        setText("theme2detail", model.theme2detail, "[Meaning / example]");
+        setText("theme3", model.theme3, "[Theme 3]");
+        setText("theme3detail", model.theme3detail, "[Meaning / example]");
+        setText("theme4", model.theme4, "[Theme 4 optional]");
+        setText("theme4detail", model.theme4detail, "[Meaning / example]");
+
+        // Slide 3: Pillars
+        renderPillarsList("pillarsList", 5);
+
+        // Slide 4: Behaviours
+        renderSimpleList("startList", model.start, "[Start doing…]", 6);
+        renderSimpleList("stopList",  model.stop,  "[Stop doing…]",  6);
+
+        // Slide 5: Owners + Cadence
+        renderSimpleList("ownersList",   model.owners,  "[Workstream - Owner - first action]", 6);
+        renderSimpleList("cadenceList",  model.cadence, "[Cadence - what we review]",           6);
+
+        // Slide 1 locked summary
+        renderSummaryThemes();
+        renderPillarsList("summaryPillarsList", 5);
+        renderSimpleList("summaryStartList",   model.start,   "[none captured]", 3);
+        renderSimpleList("summaryStopList",    model.stop,    "[none captured]", 3);
+        renderSimpleList("summaryOwnersList",  model.owners,  "[none captured]", 3);
+        renderSimpleList("summaryCadenceList", model.cadence, "[none captured]", 2);
+      };
+
+      // ── Input wiring ─────────────────────────────────────────
+      const wire = (id, key) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = model[key] || "";
+        el.addEventListener("input", () => {
+          model[key] = el.value;
+          save();
+          applyModelToDeck();
+        });
+      };
+
+      // ── Timer ─────────────────────────────────────────────────
+      let timerInterval = null;
+      let remainingMs = 0;
+      let paused = false;
+
+      const fmt = (ms) => {
+        const total = Math.floor(ms / 1000);
+        const m = String(Math.floor(Math.max(0,total) / 60)).padStart(2,"0");
+        const s = String(Math.max(0,total) % 60).padStart(2,"0");
+        return `${m}:${s}`;
+      };
+
+      const getDurationMs = (slide) => Number(slide?.dataset?.duration || 6) * 60 * 1000;
+
+      const setTimerDisplay = (text, state) => {
+        // state: "" | "warn" | "over"
+        const t1 = document.getElementById("timerText");
+        if (t1){
+          t1.textContent = text;
+          t1.className = state;
+        }
+        document.querySelectorAll(".timerText").forEach(el => {
+          el.textContent = text;
+          el.className = "timerText " + state;
+        });
+        const badge = document.getElementById("timerBadge");
+        if (badge){
+          badge.classList.remove("warn","over");
+          if (state) badge.classList.add(state);
+        }
+      };
+
+      const tickTimer = (force) => {
+        if (!force && paused) return;
+        if (!force) remainingMs -= 250;
+        const text = fmt(remainingMs);
+        const state = remainingMs <= 0 ? "over" : remainingMs <= 60_000 ? "warn" : "";
+        setTimerDisplay(text, state);
+      };
+
+      const resetTimer = () => {
+        remainingMs = getDurationMs(slides[idx]);
+        paused = false;
+        tickTimer(true);
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => tickTimer(false), 250);
+      };
+
+      const togglePause = () => { paused = !paused; };
+
+      // ── Slide navigation ─────────────────────────────────────
+      const update = () => {
+        slides.forEach((s,i) => s.classList.toggle("active", i === idx));
+        // Update global progress bar (Slide 1 footer)
+        const bar   = document.getElementById("bar");
+        const count = document.getElementById("count");
+        if (bar)   bar.style.width = ((idx + 1) / TOTAL * 100).toFixed(0) + "%";
+        if (count) count.textContent = `${idx + 1} / ${TOTAL}`;
+        // Update all per-slide progress bars
+        document.querySelectorAll(".slideBar").forEach((b, i) => {
+          // each .slideBar belongs to slides[i+1] (slides 2-6)
+          b.style.width = ((idx + 1) / TOTAL * 100).toFixed(0) + "%";
+        });
+        resetTimer();
+        updateCtrlState();
+      };
+
+      const next = () => { if (idx < TOTAL - 1){ idx++; update(); } };
+      const prev = () => { if (idx > 0){ idx--; update(); } };
+
+      const toggleNotes = () => document.body.classList.toggle("showNotes");
+
+      // ── Export / Import ──────────────────────────────────────
+      const exportJson = () => {
+        const blob = new Blob([JSON.stringify(model, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "DE_MAL_Playback_Data.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importJson = () => document.getElementById("fileImport")?.click();
+
+      const onImportFile = async (file) => {
+        try{
+          const text = await file.text();
+          const data = JSON.parse(text);
+          model = { ...model, ...data };
+          save();
+          Object.keys(model).forEach(k => {
+            const el = document.getElementById("in_" + k);
+            if (el) el.value = model[k] || "";
+          });
+          applyModelToDeck();
+        }catch(e){
+          alert("Could not import JSON — make sure the file is valid.");
+        }
+      };
+
+      const clearAll = () => {
+        if (!confirm("Clear all captured data?")) return;
+        model = {
+          theme1:"", theme1detail:"",
+          theme2:"", theme2detail:"",
+          theme3:"", theme3detail:"",
+          theme4:"", theme4detail:"",
+          pillars:"", start:"", stop:"", owners:"", cadence:""
+        };
+        save();
+        Object.keys(model).forEach(k => {
+          const el = document.getElementById("in_" + k);
+          if (el) el.value = "";
+        });
+        applyModelToDeck();
+      };
+
+      const lockDeck   = () => setLocked(true);
+      const unlockDeck = () => {
+        if (!confirm("Unlock deck to edit? You can relock when ready.")) return;
+        setLocked(false);
+      };
+
+      // ── Control bar state ────────────────────────────────────
+      const updateCtrlState = () => {
+        const prevBtn = document.getElementById("ctrlPrev");
+        const nextBtn = document.getElementById("ctrlNext");
+        if (prevBtn) prevBtn.disabled = idx === 0;
+        if (nextBtn) nextBtn.disabled = idx === TOTAL - 1;
+
+        const lockBtn = document.getElementById("ctrlLock");
+        if (lockBtn){
+          lockBtn.textContent = isLocked() ? "🔓 Unlock" : "🔒 Lock";
+          lockBtn.classList.toggle("active", isLocked());
+        }
+        const notesBtn = document.getElementById("ctrlNotes");
+        if (notesBtn) notesBtn.classList.toggle("active", document.body.classList.contains("showNotes"));
+
+        const pauseBtn = document.getElementById("ctrlPause");
+        if (pauseBtn) pauseBtn.textContent = paused ? "▶ Resume" : "⏸ Pause";
+      };
+
+      // ── Init ─────────────────────────────────────────────────
+      load();
+
+      wire("in_theme1","theme1");
+      wire("in_theme1detail","theme1detail");
+      wire("in_theme2","theme2");
+      wire("in_theme2detail","theme2detail");
+      wire("in_theme3","theme3");
+      wire("in_theme3detail","theme3detail");
+      wire("in_theme4","theme4");
+      wire("in_theme4detail","theme4detail");
+      wire("in_pillars","pillars");
+      wire("in_start","start");
+      wire("in_stop","stop");
+      wire("in_owners","owners");
+      wire("in_cadence","cadence");
+
+      document.getElementById("btnExport")?.addEventListener("click", exportJson);
+      document.getElementById("btnImport")?.addEventListener("click", importJson);
+      document.getElementById("btnClear")?.addEventListener("click", clearAll);
+      document.getElementById("btnLock")?.addEventListener("click", lockDeck);
+      document.getElementById("fileImport")?.addEventListener("change", (e) => {
+        const f = e.target.files?.[0];
+        if (f) onImportFile(f);
+        e.target.value = "";
+      });
+
+      document.getElementById("ctrlPrev")?.addEventListener("click", prev);
+      document.getElementById("ctrlNext")?.addEventListener("click", next);
+      document.getElementById("ctrlPause")?.addEventListener("click", () => { togglePause(); updateCtrlState(); });
+      document.getElementById("ctrlReset")?.addEventListener("click", () => { resetTimer(); updateCtrlState(); });
+      document.getElementById("ctrlNotes")?.addEventListener("click", () => { toggleNotes(); updateCtrlState(); });
+      document.getElementById("ctrlLock")?.addEventListener("click", () => {
+        if (isLocked()) unlockDeck(); else lockDeck();
+        updateCtrlState();
+      });
+
+      applyModelToDeck();
+      setLocked(isLocked());
+      update();
+
+    })();
+  </script>
+</body>
+</html>
