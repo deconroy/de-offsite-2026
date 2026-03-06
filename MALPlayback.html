@@ -451,6 +451,124 @@
       padding-top: 16px; width: min(560px, 80vw);
     }
 
+    /* ── Numbered rows ───────────────────────────────── */
+    .numberedList {
+      list-style: none;
+      margin: 0; padding: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      overflow-y: auto;
+    }
+    .numberedList li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .numberedList li:last-child { border-bottom: none; }
+    .rowNum {
+      display: flex; align-items: center; justify-content: center;
+      width: clamp(26px, 2.2vw, 36px);
+      height: clamp(26px, 2.2vw, 36px);
+      border-radius: 99px;
+      background: rgba(99,223,78,0.10);
+      border: 1px solid rgba(99,223,78,0.28);
+      color: var(--wasabi);
+      font-size: clamp(11px, 1vw, 15px);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .rowContent { flex: 1; min-width: 0; }
+    .rowMain {
+      font-size: clamp(14px, 1.4vw, 22px);
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.3;
+    }
+    .rowOwner {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 9px;
+      border-radius: 999px;
+      background: rgba(129,181,161,0.15);
+      border: 1px solid rgba(129,181,161,0.28);
+      color: var(--snGreen);
+      font-size: clamp(11px, 0.9vw, 14px);
+      font-weight: 500;
+      vertical-align: 1px;
+    }
+    .rowSub {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: clamp(12px, 1.1vw, 18px);
+      line-height: 1.3;
+    }
+
+    /* ── Parked items (Slide 5) ──────────────────────── */
+    .parkedSection {
+      flex: 0 0 auto;
+      margin-top: 10px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(255,180,50,0.04);
+      border: 1px solid rgba(255,180,50,0.14);
+      border-left: 3px solid rgba(255,180,50,0.45);
+    }
+    .parkedSection h4 {
+      margin: 0 0 5px;
+      font-size: clamp(10px, 0.9vw, 13px);
+      font-weight: 700; letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: rgba(255,180,50,0.70);
+    }
+    #parkedList {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    #parkedList li {
+      font-size: clamp(12px, 1.1vw, 16px);
+      color: rgba(255,255,255,0.60);
+      background: rgba(255,180,50,0.07);
+      border: 1px solid rgba(255,180,50,0.18);
+      border-radius: 8px;
+      padding: 4px 10px;
+      margin: 0;
+    }
+
+    /* ── Quote block (Slide 6) ───────────────────────── */
+    .quoteBlock {
+      max-width: min(780px, 82vw);
+      text-align: center;
+      position: relative;
+    }
+    .quoteBlock .quoteMark {
+      font-size: clamp(48px, 5.5vw, 80px);
+      line-height: 0.7;
+      color: var(--wasabi);
+      opacity: 0.30;
+      display: block;
+      margin-bottom: 8px;
+      font-style: normal;
+    }
+    .quoteBlock p {
+      margin: 0;
+      font-size: clamp(18px, 2.1vw, 32px);
+      font-style: italic;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.5;
+    }
+    .quoteBlock p:empty::before {
+      content: "Add your one-sentence DE definition on Slide 1 prep workspace";
+      color: rgba(255,255,255,0.20);
+      font-style: normal;
+      font-size: clamp(14px, 1.4vw, 20px);
+    }
+
     @media print {
       body { overflow: visible; }
       .deck { display: block; padding: 0; }
@@ -574,6 +692,17 @@
               <div class="field">
                 <label>Cadence / tracking — one per line (updates Slide 5)</label>
                 <textarea id="in_cadence" placeholder="Monthly ELT check-in - what we review"></textarea>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+              <div class="field">
+                <label>One-sentence DE definition — shown as quote on closing slide</label>
+                <input id="in_definition" placeholder="e.g., DE is the team that turns ServiceNow's promise into customer reality" />
+              </div>
+              <div class="field">
+                <label>Parked items — unresolved, shown on Slide 5 (one per line, format: Item - Owner)</label>
+                <textarea id="in_parked" placeholder="Topic to resolve - Owner&#10;Topic to resolve - Owner"></textarea>
               </div>
             </div>
 
@@ -785,15 +914,19 @@
         <div class="fillLayout grid">
           <div class="card">
             <h3><span class="pill">Owners</span> Accountable leads</h3>
-            <ul id="ownersList" class="bigList"></ul>
+            <ul id="ownersList" class="numberedList"></ul>
           </div>
           <div class="card">
             <h3><span class="pill">Cadence</span> How we track progress</h3>
-            <ul id="cadenceList" class="bigList"></ul>
+            <ul id="cadenceList" class="numberedList"></ul>
             <div class="notes">
-              <strong>Dan close:</strong> "Clear ownership. Clear cadence. You'll see progress — not just a slide deck."
+              <strong>CY close:</strong> "Clear ownership. Clear cadence. You'll see progress — not just a slide deck."
             </div>
           </div>
+        </div>
+        <div class="parkedSection" id="parkedSection">
+          <h4>⚑ Parked — to be resolved post-session</h4>
+          <ul id="parkedList"></ul>
         </div>
       </div>
       <div class="footer">
@@ -819,6 +952,10 @@
       </div>
       <div class="slideBody">
         <div class="closeSlide">
+          <div class="quoteBlock">
+            <span class="quoteMark">"</span>
+            <p id="definitionText" data-bind="definition"></p>
+          </div>
           <h1>Thank you</h1>
           <ul class="closeBullets">
             <li>We heard you</li>
@@ -854,7 +991,8 @@
       theme2:"", theme2detail:"",
       theme3:"", theme3detail:"",
       theme4:"", theme4detail:"",
-      pillars:"", start:"", stop:"", owners:"", cadence:""
+      pillars:"", start:"", stop:"", owners:"", cadence:"",
+      definition:"", parked:""
     };
 
     const load = () => {
@@ -929,6 +1067,43 @@
       });
     };
 
+    // Renders numbered rows; parses "Primary - Owner - Detail" format
+    const renderNumberedList = (id, text, placeholder, max) => {
+      const ul = document.getElementById(id);
+      if (!ul) return;
+      ul.innerHTML = "";
+      const lines = parseLines(text);
+      if (!lines.length) {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="rowNum" style="opacity:0.3">—</span><span class="rowContent" style="color:rgba(255,255,255,0.28)">${esc(placeholder)}</span>`;
+        ul.appendChild(li);
+        return;
+      }
+      lines.slice(0, max||6).forEach((line, i) => {
+        const parts = line.split(" - ");
+        const primary = esc(parts[0].trim());
+        const owner   = parts[1] ? parts[1].trim() : null;
+        const detail  = parts.slice(2).join(" - ").trim();
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="rowNum">${i+1}</span><div class="rowContent"><span class="rowMain">${primary}${owner ? `<span class="rowOwner">${esc(owner)}</span>` : ''}</span>${detail ? `<span class="rowSub">${esc(detail)}</span>` : ''}</div>`;
+        ul.appendChild(li);
+      });
+    };
+
+    const renderParked = () => {
+      const ul  = document.getElementById("parkedList");
+      const sec = document.getElementById("parkedSection");
+      if (!ul) return;
+      ul.innerHTML = "";
+      const lines = parseLines(model.parked);
+      if (sec) sec.style.display = lines.length ? "" : "none";
+      lines.slice(0,6).forEach(line => {
+        const li = document.createElement("li");
+        li.textContent = line;
+        ul.appendChild(li);
+      });
+    };
+
     const renderPillars = (id, max) => {
       const ul = document.getElementById(id);
       if (!ul) return;
@@ -985,8 +1160,11 @@
       renderList("startList", model.start, "[Start doing…]", 6);
       renderList("stopList",  model.stop,  "[Stop doing…]",  6);
       // Slide 5
-      renderList("ownersList",  model.owners,  "[Workstream - Owner - action]", 6);
-      renderList("cadenceList", model.cadence, "[Cadence - what we review]",    6);
+      renderNumberedList("ownersList",  model.owners,  "Workstream - Owner - first action", 6);
+      renderNumberedList("cadenceList", model.cadence, "Cadence - what we review",           4);
+      renderParked();
+      // Slide 6 definition
+      setText("definition", model.definition, "");
       // Slide 1 locked summary
       renderSummaryThemes();
       renderPillars("summaryPillarsList", 5);
@@ -1073,7 +1251,7 @@
     // ── Clear ────────────────────────────────────────────────
     const clearAll = () => {
       if (!confirm("Clear all captured data?")) return;
-      model = { theme1:"",theme1detail:"",theme2:"",theme2detail:"",theme3:"",theme3detail:"",theme4:"",theme4detail:"",pillars:"",start:"",stop:"",owners:"",cadence:"" };
+      model = { theme1:"",theme1detail:"",theme2:"",theme2detail:"",theme3:"",theme3detail:"",theme4:"",theme4detail:"",pillars:"",start:"",stop:"",owners:"",cadence:"",definition:"",parked:"" };
       save();
       Object.keys(model).forEach(k => { const el = document.getElementById("in_"+k); if (el) el.value=""; });
       applyModelToDeck();
@@ -1123,6 +1301,7 @@
     wire("in_pillars","pillars");
     wire("in_start","start"); wire("in_stop","stop");
     wire("in_owners","owners"); wire("in_cadence","cadence");
+    wire("in_definition","definition"); wire("in_parked","parked");
 
     document.getElementById("btnLock")?.addEventListener("click", lockDeck);
     document.getElementById("btnClear")?.addEventListener("click", clearAll);
