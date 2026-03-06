@@ -425,15 +425,16 @@
       flex: 1 1 auto;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center; gap: 24px;
+      text-align: center; gap: 0;
     }
     .closeSlide h1 {
-      font-size: clamp(52px, 7vw, 88px); margin: 0;
+      font-size: clamp(52px, 7vw, 88px);
+      margin: clamp(24px, 5vh, 56px) 0 0;
       background: linear-gradient(135deg, #fff 0%, var(--snGreen) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .closeBullets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .closeBullets { list-style: none; margin: clamp(16px, 3vh, 32px) 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
     .closeBullets li {
       font-size: clamp(17px, 2vw, 24px);
       color: rgba(255,255,255,0.85);
@@ -449,6 +450,7 @@
       font-size: 13px; color: rgba(255,255,255,0.40);
       border-top: 1px solid var(--line);
       padding-top: 16px; width: min(560px, 80vw);
+      margin-top: clamp(16px, 3vh, 36px);
     }
 
     /* ── Numbered rows ───────────────────────────────── */
@@ -542,31 +544,31 @@
 
     /* ── Quote block (Slide 6) ───────────────────────── */
     .quoteBlock {
-      max-width: min(780px, 82vw);
+      max-width: min(960px, 90vw);
       text-align: center;
-      position: relative;
     }
     .quoteBlock .quoteMark {
-      font-size: clamp(48px, 5.5vw, 80px);
+      font-size: clamp(52px, 6vw, 90px);
       line-height: 0.7;
       color: var(--wasabi);
-      opacity: 0.30;
+      opacity: 0.28;
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       font-style: normal;
     }
     .quoteBlock p {
       margin: 0;
-      font-size: clamp(18px, 2.1vw, 32px);
+      font-size: clamp(26px, 3.8vw, 58px);
       font-style: italic;
-      color: rgba(255,255,255,0.72);
-      line-height: 1.5;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.35;
+      letter-spacing: -0.3px;
     }
     .quoteBlock p:empty::before {
-      content: "Add your one-sentence DE definition on Slide 1 prep workspace";
-      color: rgba(255,255,255,0.20);
+      content: "Add your one-sentence DE definition on Slide 1";
+      color: rgba(255,255,255,0.18);
       font-style: normal;
-      font-size: clamp(14px, 1.4vw, 20px);
+      font-size: clamp(18px, 2vw, 28px);
     }
 
     @media print {
@@ -706,6 +708,31 @@
               </div>
             </div>
 
+            <hr class="sectionDivider" />
+            <div class="sectionLabel">Speakers — edit to override defaults shown on each slide badge</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:6px;">
+              <div class="field">
+                <label>Slide 2 speaker</label>
+                <input id="in_speaker2" placeholder="Dan" />
+              </div>
+              <div class="field">
+                <label>Slide 3 speaker</label>
+                <input id="in_speaker3" placeholder="Gregg" />
+              </div>
+              <div class="field">
+                <label>Slide 4 speaker</label>
+                <input id="in_speaker4" placeholder="Ethan" />
+              </div>
+              <div class="field">
+                <label>Slide 5 speaker</label>
+                <input id="in_speaker5" placeholder="Dan / CY" />
+              </div>
+              <div class="field">
+                <label>Slide 6 speaker</label>
+                <input id="in_speaker6" placeholder="CY" />
+              </div>
+            </div>
+
             <!-- JSON / Share panel -->
             <div id="jsonPanel">
               <div class="jsonPanelTitle">Share URL — paste to pre-load this deck for anyone</div>
@@ -773,7 +800,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · MAL Playback</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">Dan</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;" data-bind="speaker2">Dan</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -816,7 +843,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · Narrative</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">Gregg</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;" data-bind="speaker3">Gregg</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -859,7 +886,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · Commitments</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">07:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">Ethan</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;" data-bind="speaker4">Ethan</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -900,7 +927,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · Follow-through</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">Dan / CY</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;" data-bind="speaker5">Dan / CY</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -942,7 +969,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · Close</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">02:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">CY</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;" data-bind="speaker6">CY</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -987,7 +1014,8 @@
       theme3:"", theme3detail:"",
       theme4:"", theme4detail:"",
       pillars:"", start:"", stop:"", owners:"", cadence:"",
-      definition:"", parked:""
+      definition:"", parked:"",
+      speaker2:"", speaker3:"", speaker4:"", speaker5:"", speaker6:""
     };
 
     const load = () => {
@@ -1173,6 +1201,12 @@
       renderParked();
       // Slide 6 definition
       setText("definition", model.definition, "");
+      // Speakers (fallback to defaults when empty)
+      setText("speaker2", model.speaker2, "Dan");
+      setText("speaker3", model.speaker3, "Gregg");
+      setText("speaker4", model.speaker4, "Ethan");
+      setText("speaker5", model.speaker5, "Dan / CY");
+      setText("speaker6", model.speaker6, "CY");
       // Slide 1 locked summary
       renderSummaryThemes();
       renderPillars("summaryPillarsList", 5);
@@ -1259,7 +1293,7 @@
     // ── Clear ────────────────────────────────────────────────
     const clearAll = () => {
       if (!confirm("Clear all captured data?")) return;
-      model = { theme1:"",theme1detail:"",theme2:"",theme2detail:"",theme3:"",theme3detail:"",theme4:"",theme4detail:"",pillars:"",start:"",stop:"",owners:"",cadence:"",definition:"",parked:"" };
+      model = { theme1:"",theme1detail:"",theme2:"",theme2detail:"",theme3:"",theme3detail:"",theme4:"",theme4detail:"",pillars:"",start:"",stop:"",owners:"",cadence:"",definition:"",parked:"",speaker2:"",speaker3:"",speaker4:"",speaker5:"",speaker6:"" };
       save();
       Object.keys(model).forEach(k => { const el = document.getElementById("in_"+k); if (el) el.value=""; });
       applyModelToDeck();
@@ -1310,6 +1344,9 @@
     wire("in_start","start"); wire("in_stop","stop");
     wire("in_owners","owners"); wire("in_cadence","cadence");
     wire("in_definition","definition"); wire("in_parked","parked");
+    wire("in_speaker2","speaker2"); wire("in_speaker3","speaker3");
+    wire("in_speaker4","speaker4"); wire("in_speaker5","speaker5");
+    wire("in_speaker6","speaker6");
 
     document.getElementById("btnLock")?.addEventListener("click", lockDeck);
     document.getElementById("btnClear")?.addEventListener("click", clearAll);
