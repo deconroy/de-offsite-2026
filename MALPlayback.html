@@ -484,7 +484,7 @@
     }
     .rowContent { flex: 1; min-width: 0; }
     .rowMain {
-      font-size: clamp(14px, 1.4vw, 22px);
+      font-size: clamp(16px, 1.7vw, 28px);
       font-weight: 600;
       color: rgba(255,255,255,0.92);
       line-height: 1.3;
@@ -497,7 +497,7 @@
       background: rgba(129,181,161,0.15);
       border: 1px solid rgba(129,181,161,0.28);
       color: var(--snGreen);
-      font-size: clamp(11px, 0.9vw, 14px);
+      font-size: clamp(12px, 1vw, 16px);
       font-weight: 500;
       vertical-align: 1px;
     }
@@ -505,7 +505,7 @@
       display: block;
       margin-top: 3px;
       color: var(--muted);
-      font-size: clamp(12px, 1.1vw, 18px);
+      font-size: clamp(13px, 1.3vw, 21px);
       line-height: 1.3;
     }
 
@@ -782,19 +782,14 @@
         <div class="fillLayout two">
           <div class="card">
             <h3><span class="pill">Themes</span> Patterns from the conversation</h3>
-            <ul class="bigList">
-              <li><strong data-bind="theme1">[Theme 1]</strong><small data-bind="theme1detail">[Meaning / example]</small></li>
-              <li><strong data-bind="theme2">[Theme 2]</strong><small data-bind="theme2detail">[Meaning / example]</small></li>
-              <li><strong data-bind="theme3">[Theme 3]</strong><small data-bind="theme3detail">[Meaning / example]</small></li>
-              <li><strong data-bind="theme4">[Theme 4 optional]</strong><small data-bind="theme4detail">[Meaning / example]</small></li>
-            </ul>
+            <ul id="themesList" class="numberedList"></ul>
           </div>
           <div class="card">
             <h3><span class="pill">Our commitment</span></h3>
-            <ul class="bigList">
-              <li>We took this seriously.<small>The leadership team spent the day working through your expectations.</small></li>
-              <li>We aligned on what DE stands for.<small>A clear narrative — not just words on a slide.</small></li>
-              <li>We've assigned owners.<small>Concrete actions with accountability and a cadence.</small></li>
+            <ul class="numberedList">
+              <li><span class="rowNum">1</span><div class="rowContent"><span class="rowMain">We took this seriously.</span><span class="rowSub">The leadership team spent the day working through your expectations.</span></div></li>
+              <li><span class="rowNum">2</span><div class="rowContent"><span class="rowMain">We aligned on what DE stands for.</span><span class="rowSub">A clear narrative — not just words on a slide.</span></div></li>
+              <li><span class="rowNum">3</span><div class="rowContent"><span class="rowMain">We've assigned owners.</span><span class="rowSub">Concrete actions with accountability and a cadence.</span></div></li>
             </ul>
             <div class="notes">
               <strong>Dan opening:</strong> "This morning you shared expectations. We spent the day reflecting as a leadership group. Here's what we heard and how we're responding."<br><br>
@@ -830,14 +825,14 @@
         <div class="fillLayout two">
           <div class="card">
             <h3><span class="pill">Pillars</span> Agreed today</h3>
-            <ul id="pillarsList" class="bigList"></ul>
+            <ul id="pillarsList" class="numberedList"></ul>
           </div>
           <div class="card">
             <h3><span class="pill">So what</span> What this means in practice</h3>
-            <ul class="bigList">
-              <li>One DE story across APAC.<small>Same narrative across regions and practices.</small></li>
-              <li>Behaviour over slogans.<small>Observable shifts stakeholders can point to.</small></li>
-              <li>Outcomes are the anchor.<small>Not just deliverables — business results.</small></li>
+            <ul class="numberedList">
+              <li><span class="rowNum">1</span><div class="rowContent"><span class="rowMain">One DE story across APAC.</span><span class="rowSub">Same narrative across regions and practices.</span></div></li>
+              <li><span class="rowNum">2</span><div class="rowContent"><span class="rowMain">Behaviour over slogans.</span><span class="rowSub">Observable shifts stakeholders can point to.</span></div></li>
+              <li><span class="rowNum">3</span><div class="rowContent"><span class="rowMain">Outcomes are the anchor.</span><span class="rowSub">Not just deliverables — business results.</span></div></li>
             </ul>
             <div class="notes">
               <strong>Gregg:</strong> For each pillar — one sentence meaning + one "what it looks like".<br>
@@ -873,14 +868,14 @@
         <div class="fillLayout two">
           <div class="card">
             <h3><span class="pill">Start</span> What we will do</h3>
-            <ul id="startList" class="bigList"></ul>
+            <ul id="startList" class="numberedList"></ul>
             <div class="notes">
               <strong>Ethan:</strong> Pick 1–2 items, explain the operating-model impact, then stop. Don't list everything — the slide does that.
             </div>
           </div>
           <div class="card">
             <h3><span class="pill">Stop</span> What we will stop doing</h3>
-            <ul id="stopList" class="bigList"></ul>
+            <ul id="stopList" class="numberedList"></ul>
             <div class="notes">
               <strong>Ethan:</strong> Being direct about what we'll stop is a credibility signal to MALs. Keep it short.
             </div>
@@ -905,7 +900,7 @@
         <div class="badge"><span class="dot"></span> DE Offsite · Follow-through</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="timer">⏱ <strong class="timerText">06:00</strong></div>
-          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">CY</strong></div>
+          <div class="badge">Speaker: <strong style="color:rgba(255,255,255,0.9);margin-left:5px;">Dan / CY</strong></div>
         </div>
       </div>
       <div class="slideBody">
@@ -1104,6 +1099,26 @@
       });
     };
 
+    const renderThemes = () => {
+      const ul = document.getElementById("themesList");
+      if (!ul) return;
+      ul.innerHTML = "";
+      let count = 0;
+      [1,2,3,4].forEach(n => {
+        const t = model[`theme${n}`], d = model[`theme${n}detail`];
+        if (!t || !t.trim()) return;
+        count++;
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="rowNum">${count}</span><div class="rowContent"><span class="rowMain">${esc(t)}</span>${d?`<span class="rowSub">${esc(d)}</span>`:''}</div>`;
+        ul.appendChild(li);
+      });
+      if (!count) {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="rowNum" style="opacity:0.3">—</span><span class="rowContent" style="color:rgba(255,255,255,0.28)">No themes captured yet</span>`;
+        ul.appendChild(li);
+      }
+    };
+
     const renderPillars = (id, max) => {
       const ul = document.getElementById(id);
       if (!ul) return;
@@ -1113,12 +1128,12 @@
       const src = isEmpty
         ? ["[Pillar 1] - [meaning]","[Pillar 2] - [meaning]","[Pillar 3] - [meaning]"]
         : lines;
-      src.slice(0, max||5).forEach(line => {
+      src.slice(0, max||5).forEach((line, i) => {
         const parts = line.split(" - ");
         const name = (parts[0]||line).trim();
         const def  = parts.slice(1).join(" - ").trim();
         const li = document.createElement("li");
-        li.innerHTML = `<strong style="${isEmpty?'color:rgba(255,255,255,0.28)':''}">${esc(name)}</strong>${def?`<small style="${isEmpty?'color:rgba(255,255,255,0.20)':''}">${esc(def)}</small>`:''}`;
+        li.innerHTML = `<span class="rowNum" style="${isEmpty?'opacity:0.3':''}">${i+1}</span><div class="rowContent"><span class="rowMain" style="${isEmpty?'color:rgba(255,255,255,0.28)':''}">${esc(name)}</span>${def?`<span class="rowSub" style="${isEmpty?'color:rgba(255,255,255,0.20)':''}">${esc(def)}</span>`:''}</div>`;
         ul.appendChild(li);
       });
     };
@@ -1145,20 +1160,13 @@
     };
 
     const applyModelToDeck = () => {
-      // Slide 2 data-bind
-      setText("theme1", model.theme1, "[Theme 1]");
-      setText("theme1detail", model.theme1detail, "[Meaning / example]");
-      setText("theme2", model.theme2, "[Theme 2]");
-      setText("theme2detail", model.theme2detail, "[Meaning / example]");
-      setText("theme3", model.theme3, "[Theme 3]");
-      setText("theme3detail", model.theme3detail, "[Meaning / example]");
-      setText("theme4", model.theme4, "[Theme 4 optional]");
-      setText("theme4detail", model.theme4detail, "[Meaning / example]");
+      // Slide 2
+      renderThemes();
       // Slide 3
       renderPillars("pillarsList", 5);
       // Slide 4
-      renderList("startList", model.start, "[Start doing…]", 6);
-      renderList("stopList",  model.stop,  "[Stop doing…]",  6);
+      renderNumberedList("startList", model.start, "Start doing…", 6);
+      renderNumberedList("stopList",  model.stop,  "Stop doing…",  6);
       // Slide 5
       renderNumberedList("ownersList",  model.owners,  "Workstream - Owner - first action", 6);
       renderNumberedList("cadenceList", model.cadence, "Cadence - what we review",           4);
@@ -1329,7 +1337,8 @@
     document.getElementById("ctrlLock")?.addEventListener("click", () => { if (isLocked()) unlockDeck(); else lockDeck(); });
 
     applyModelToDeck();
-    setLocked(isLocked());
+    // Auto-lock when pre-loaded from a shared URL
+    setLocked(urlParam ? true : isLocked());
     update();
 
   })();
